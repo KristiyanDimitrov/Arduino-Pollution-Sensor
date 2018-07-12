@@ -1,0 +1,102 @@
+	<script>
+
+		var sensors = [
+			<%_ for(var i = 0; i < uniqueLocations.length; i++) { _%>
+				<%_ var key = uniqueLocations[i]; _%>
+				<%_ for(var k = 0; k < latestReadings[key]; k++) { _%>
+					{ coords: [<%= uniqueCoords[key][0] %>, <%= uniqueCoords[key][1] %>] }, // <%= uniqueLocations[i] %>
+				<%_ } _%>
+			<%_ } _%>
+		];
+
+		var map, heatmap;
+
+		//############################################## MAP CONFIGS ##############################################
+		function initMap() {
+		map = new google.maps.Map(document.getElementById('map'), {
+				zoom: 14,
+				center: {lat: 52.4072042, lng: -1.5071125},
+				mapTypeId: google.maps.MapTypeId.ROADMAP
+			});
+
+			var coordsArr = <%= coordsArrStringified() %>;
+			var locationsArr = [<%_ for(var i = 0; i < uniqueLocations.length; i++) { _%>'<%= uniqueLocations[i] %>'<%_ if (i != uniqueLocations.length-1) { _%>,<%_ }} _%>];
+			var latestReadingsArr = [<%_ for(var i = 0; i < uniqueLocations.length; i++) { _%><%= latestReadings[(uniqueLocations[i])] %><%_ if (i != uniqueLocations.length-1) { _%>,<%_ }} _%>];
+
+			// Placing map markers + preparing info windows for each
+			for (var i = 0; i < coordsArr.length; i++) {
+				var marker = new google.maps.Marker({
+					position: {lat: coordsArr[i][0], lng: coordsArr[i][1]},
+					icon: 'https://www.w3schools.com/graphics/pinkball.png',
+					map: map
+				});
+
+				var info = '<div id="content"><div id="siteNotice"></div>'+
+					'<h5 id="firstHeading" class="firstHeading">'+ locationsArr[i] +'</h5>'+
+					'<div id="bodyContent"><p>Current reading: <b>'+latestReadingsArr[i]+'</b></p></div>'+
+					'</div>';
+
+				var infowindow = new google.maps.InfoWindow();
+
+				marker.addListener('click', (function(content,infowindow) { 
+					return function() {
+						infowindow.setContent(content);
+						infowindow.open(map,this);
+					};
+				})(info,infowindow));
+			}
+
+			// Preparing data for heatmap
+			var heatmapData = [];
+
+			for (var i = 0; i < sensors.length; i++) {
+				var coords = sensors[i].coords;
+				var latLng = new google.maps.LatLng(coords[0], coords[1]);
+				heatmapData.push(latLng);
+			}
+
+			// Generating heatmap
+			heatmap = new google.maps.visualization.HeatmapLayer({
+				data: heatmapData,
+				// dissipating: false,
+				radius: 100,
+				map: map
+			});
+		}
+		//############################################## END OF MAP CONFIGS ##############################################
+
+		//############################################## VUE CHART CONFIGURATIONS ##############################################
+		Vue.component('line-chart', {
+			extends: VueChartJs.Line,
+			mounted () {
+				this.renderChart({
+					<%_ var key = uniqueLocations[1] _%>
+					labels: [<%_ for(var i = 0; i < locationOccurences[key].length; i++) { _%>'Week <%= i+1 %>'<%_ if (i != locationOccurences[key].length-1) { _%>,<%_ }} _%>],
+					datasets: [
+						<%_ for(var i = 0; i < uniqueLocations.length; i++) { _%>
+						<%_ var key = location = uniqueLocations[i]; _%>
+						<%_ var color = randomRGB(); _%>
+						{
+							label: '<%= location.slice(0, location.indexOf(",")) %>',
+							borderWidth: 1,
+							borderColor: '<%= "rgb("+color+")" %>',
+							backgroundColor: '<%= "rgba("+color+",.05)" %>',
+							data: <%= JSON.stringify(locationOccurences[key]) %>
+						},
+						<%_ } _%>
+					]
+				}, {responsive: true, maintainAspectRatio: false})
+			}
+			
+		});
+
+		var vm = new Vue({
+			el: '#chart',
+			data: {
+				heading: 'Weekly CO2 Readings of Individual Sensors (Location)'
+			}
+		});
+		//############################################## END OF VUE CHART CONFIGURATIONS ##############################################
+
+	</script>
+	<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCRIzIyhXXI1JxBGUqmUsX5N4MnxYHHGCo&libraries=visualization&callback=initMap"></script>

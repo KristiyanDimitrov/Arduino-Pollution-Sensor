@@ -1,0 +1,14 @@
+# Changelog
+All notable changes to this project will be documented in this file.
+
+## [1.1.0] - 22/02/2018
+### Added
+- Excel data model;
+- Excel controller;
+
+## [1.0.0] - 15/02/2018
+### Added
+- CO2 sensor model;
+- DHT11 (Temperature and Humidity) sensor model;
+- CO2 sensor controller;
+- DHT11 (Temperature and Humidity) sensor controller;

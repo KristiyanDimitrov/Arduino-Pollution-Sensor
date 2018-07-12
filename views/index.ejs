@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Map test page</title>
+	<link rel="stylesheet" type="text/css" href="/css/bootstrap.css">
+	<link rel="stylesheet" type="text/css" href="/css/main.css">
+	<script src="/js/libs/jquery.min.js"></script>
+</head>
+<body>
+	<a><div id="chart_link"><span>Show</span> Chart</div></a>
+
+	<!-- Chart displaying weekly readings of each sensor -->
+	<div id="chart">
+		<div class="heading" style="color: white; text-align: center; margin: .5em 0">
+			{{ heading }}
+		</div>
+		<div class="main">
+			<line-chart></line-chart>
+		</div>
+	</div>
+
+	<div class="container-fluid">
+		<div id="map"></div>
+	</div>
+
+<script>
+	$('#chart').css('opacity', 0);
+	$('#chart').css('z-index', -1);
+
+	$('#chart_link').click(function() {
+		var $span = $(this).children('span');
+
+		if ($('#chart').css('opacity') == 0 && $('#chart').css('z-index') == -1) {
+			$('#chart').css('opacity', '');
+			$('#chart').css('z-index', '');
+			$('#chart').hide(0);
+		}
+		$('#chart').fadeToggle(function(){
+			if ($span.text() == 'Show') {
+				$span.text('Close')
+			} else {
+				$span.text('Show')
+			}
+		});
+	});
+
+	$('#chart .close').click(function(){
+		$('#chart_link').click();
+	});
+</script>
+<script src="/js/vue.min.js"></script>
+<script src="/js/Chart.min.js"></script>
+<script src="/js/vue-chartjs.min.js"></script>
+<% include partials/mapScripts %>
+</body>
+</html>
